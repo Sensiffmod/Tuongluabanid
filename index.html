@@ -1,81 +1,239 @@
-import time
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker Firewall Dashboard</title>
+    <style>
+        /* Định dạng cơ bản cho toàn bộ trang */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Courier New', Courier, monospace;
+        }
 
-class MiniFirewall:
-    def __init__(self):
-        # Bảng danh sách trắng (Whitelist) - Chứa các tên/IP không bao giờ bị ban
-        self.whitelist = set(["google.com", "facebook.com", "github.com", "127.0.0.1"])
-        # Nhật ký theo dõi tạm thời để phát hiện spam/tấn công
-        self.request_logs = {} 
+        /* Lớp nền hiệu ứng Matrix chuyển động */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
 
-    def add_to_whitelist(self, name_or_ip):
-        """Thêm một tên miền hoặc IP vào bảng danh sách trắng để tránh bị ban"""
-        name_or_ip = name_or_ip.strip().lower()
-        if name_or_ip not in self.whitelist:
-            self.whitelist.add(name_or_ip)
-            print(f"==> Đã THÊM '{name_or_ip}' vào danh sách an toàn.")
-        else:
-            print(f"==> '{name_or_ip}' đã tồn tại trong danh sách an toàn rồi.")
+        /* Lớp giao diện điều khiển nằm đè lên nền */
+        .interface-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4); /* Làm mờ nền một chút để nổi bật bảng điều khiển */
+        }
 
-    def remove_from_whitelist(self, name_or_ip):
-        """Xóa tên miền hoặc IP khỏi danh sách trắng"""
-        name_or_ip = name_or_ip.strip().lower()
-        if name_or_ip in self.whitelist:
-            self.whitelist.remove(name_or_ip)
-            print(f"==> Đã XÓA '{name_or_ip}' khỏi danh sách an toàn.")
-        else:
-            print(f"==> Không tìm thấy '{name_or_ip}' trong danh sách.")
+        /* Khung điều khiển trung tâm */
+        .terminal-box {
+            background: rgba(10, 15, 10, 0.85);
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            padding: 25px;
+            width: 450px;
+            border-radius: 8px;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+        }
 
-    def show_whitelist(self):
-        """Hiển thị bảng danh sách trắng hiện tại"""
-        print("\n--- BẢNG DANH SÁCH AN TOÀN (WHITELIST) ---")
-        for item in sorted(self.whitelist):
-            print(f" - {item}")
-        print("------------------------------------------\n")
+        .terminal-header {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            animation: blink 1.5s infinite;
+        }
 
-    def check_traffic(self, source):
-        """Kiểm tra lưu lượng truy cập xem có bị ban hay không"""
-        source = source.strip().lower()
+        /* Định dạng form nhập dữ liệu */
+        .input-group {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+        }
 
-        # BƯỚC 1: Kiểm tra xem có nằm trong bảng tránh ban không
-        if source in self.whitelist:
-            return f"[CHO PHÉP] {source} truy cập mượt mà (Đã được bảo vệ trong Whitelist)."
+        .input-group label {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
 
-        # BƯỚC 2: Giả lập cơ chế phát hiện spam nếu KHÔNG nằm trong whitelist
-        current_time = time.time()
-        if source not in self.request_logs:
-            self.request_logs[source] = []
-        
-        # Lọc các yêu cầu trong vòng 5 giây qua
-        self.request_logs[source] = [t for t in self.request_logs[source] if current_time - t < 5]
-        self.request_logs[source].append(current_time)
+        .input-group input {
+            background: transparent;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            color: #00ff00;
+            font-family: inherit;
+            outline: none;
+            font-size: 16px;
+        }
 
-        # Nếu truy cập quá 3 lần trong 5 giây -> BAN
-        if len(self.request_logs[source]) > 3:
-            return f"[BỊ BAN !!!] {source} đã bị tường lửa chặn do spam hệ thống!"
-        
-        return f"[CHO PHÉP TẠM THỜI] {source} đang truy cập bình thường."
+        .input-group input:focus {
+            box-shadow: 0 0 8px #00ff00;
+        }
+
+        /* Nút bấm kiểu Cyberpunk */
+        .btn {
+            background: #00ff00;
+            color: black;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .btn:hover {
+            background: black;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        /* Nhật ký hệ thống */
+        .log-box {
+            margin-top: 20px;
+            height: 120px;
+            border: 1px dashed #00ff00;
+            padding: 10px;
+            font-size: 12px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        /* Hiệu ứng nhấp nháy chữ */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="interface-container">
+        <div class="terminal-box">
+            <div class="terminal-header">> FIREWALL PROTECTOR _</div>
+            
+            <div class="input-group">
+                <label for="whitelistInput">Nhập IP hoặc Tên Miền để Tránh Ban:</label>
+                <input type="text" id="whitelistInput" placeholder="Ví dụ: my-game-server.com hoặc 1.1.1.1">
+            </div>
+            
+            <button class="btn" onclick="addToWhitelist()">THÊM VÀO WHITELIST</button>
+
+            <div class="log-box" id="logBox">
+                <div class="log-entry" style="color: #888;">[HỆ THỐNG]: Tường lửa đã kích hoạt thành công...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CODE XỬ LÝ HIỆU ỨNG NỀN MATRIX CHUYỂN ĐỘNG ---
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Khởi tạo kích thước canvas tràn màn hình
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Ký tự hiển thị (Chữ cái, số và ký tự đặc biệt)
+        const katakana = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+";
+        const alphabet = katakana.split("");
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+
+        // Khởi tạo mảng vị trí Y cho mỗi cột chữ
+        const rainDrops = [];
+        for (let x = 0; x < columns; x++) {
+            rainDrops[x] = 1;
+        }
+
+        // Hàm vẽ hiệu ứng chuyển động
+        function drawMatrix() {
+            // Tạo hiệu ứng mờ dần (màn đêm bao phủ) bằng cách phủ lớp đen trong suốt lên
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0'; // Màu xanh lá đặc trưng
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < rainDrops.length; i++) {
+                // Lấy ngẫu nhiên một ký tự
+                const text = alphabet[Math.floor(Math.random() * alphabet.length)];
+                
+                // Vẽ ký tự tại tọa độ (X, Y)
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                // Cho ký tự rơi xuống, nếu chạm đáy thì reset ngẫu nhiên về đỉnh
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        }
+
+        // Chạy hiệu ứng lặp đi lặp lại sau mỗi 30 mili giây
+        setInterval(drawMatrix, 30);
 
 
-# --- CHƯƠNG TRÌNH CHẠY THỬ (DEMO) ---
-if __name__ == "__main__":
-    fw = MiniFirewall()
-    
-    # 1. Xem danh sách mặc định
-    fw.show_whitelist()
-    
-    # 2. Thêm một tên mới vào bảng để tránh ban
-    fw.add_to_whitelist("my-game-server.com")
-    fw.show_whitelist()
-    
-    # 3. Thử nghiệm kiểm tra truy cập
-    print("--- Thử nghiệm kiểm tra truy cập ---")
-    
-    # Trường hợp 1: Tên nằm trong Whitelist (gửi liên tục không sao)
-    for _ in range(5):
-        print(fw.check_traffic("my-game-server.com"))
-        
-    print("\n----------------------------------")
-    # Trường hợp 2: Tên LẠ không có trong bảng (gửi liên tục sẽ bị BAN)
-    for i in range(5):
-        print(f"Lần {i+1}: {fw.check_traffic('stranger-danger.xyz')}")
+        // --- 2. CODE XỬ LÝ SỰ KIỆN THÊM VÀO BẢNG TRÁNH BAN ---
+        const whitelist = new Set(["google.com", "127.0.0.1"]); // Danh sách mẫu ban đầu
+
+        function addToWhitelist() {
+            const inputEl = document.getElementById('whitelistInput');
+            const logBox = document.getElementById('logBox');
+            const value = inputEl.value.trim().toLowerCase();
+
+            if (!value) {
+                alert("Vui lòng điền tên hoặc IP hợp lệ!");
+                return;
+            }
+
+            const currentTime = new Date().toLocaleTimeString();
+            let logMessage = "";
+
+            if (whitelist.has(value)) {
+                logMessage = `<div class="log-entry" style="color: #ff9900;">[${currentTime}] [CẢNH BÁO]: '${value}' đã có sẵn trong bảng an toàn.</div>`;
+            } else {
+                whitelist.add(value);
+                logMessage = `<div class="log-entry" style="color: #00ff00;">[${currentTime}] [THÀNH CÔNG]: Đã bảo vệ '${value}' khỏi hệ thống BAN.</div>`;
+            }
+
+            // Cập nhật nhật ký lên giao diện
+            logBox.innerHTML += logMessage;
+            logBox.scrollTop = logBox.scrollHeight; // Tự động cuộn xuống dòng mới nhất
+            inputEl.value = ""; // Xóa trống ô nhập
+        }
+    </script>
+</body>
+</html>
  
