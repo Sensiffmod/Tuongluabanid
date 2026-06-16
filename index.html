@@ -1,0 +1,81 @@
+import time
+
+class MiniFirewall:
+    def __init__(self):
+        # Bảng danh sách trắng (Whitelist) - Chứa các tên/IP không bao giờ bị ban
+        self.whitelist = set(["google.com", "facebook.com", "github.com", "127.0.0.1"])
+        # Nhật ký theo dõi tạm thời để phát hiện spam/tấn công
+        self.request_logs = {} 
+
+    def add_to_whitelist(self, name_or_ip):
+        """Thêm một tên miền hoặc IP vào bảng danh sách trắng để tránh bị ban"""
+        name_or_ip = name_or_ip.strip().lower()
+        if name_or_ip not in self.whitelist:
+            self.whitelist.add(name_or_ip)
+            print(f"==> Đã THÊM '{name_or_ip}' vào danh sách an toàn.")
+        else:
+            print(f"==> '{name_or_ip}' đã tồn tại trong danh sách an toàn rồi.")
+
+    def remove_from_whitelist(self, name_or_ip):
+        """Xóa tên miền hoặc IP khỏi danh sách trắng"""
+        name_or_ip = name_or_ip.strip().lower()
+        if name_or_ip in self.whitelist:
+            self.whitelist.remove(name_or_ip)
+            print(f"==> Đã XÓA '{name_or_ip}' khỏi danh sách an toàn.")
+        else:
+            print(f"==> Không tìm thấy '{name_or_ip}' trong danh sách.")
+
+    def show_whitelist(self):
+        """Hiển thị bảng danh sách trắng hiện tại"""
+        print("\n--- BẢNG DANH SÁCH AN TOÀN (WHITELIST) ---")
+        for item in sorted(self.whitelist):
+            print(f" - {item}")
+        print("------------------------------------------\n")
+
+    def check_traffic(self, source):
+        """Kiểm tra lưu lượng truy cập xem có bị ban hay không"""
+        source = source.strip().lower()
+
+        # BƯỚC 1: Kiểm tra xem có nằm trong bảng tránh ban không
+        if source in self.whitelist:
+            return f"[CHO PHÉP] {source} truy cập mượt mà (Đã được bảo vệ trong Whitelist)."
+
+        # BƯỚC 2: Giả lập cơ chế phát hiện spam nếu KHÔNG nằm trong whitelist
+        current_time = time.time()
+        if source not in self.request_logs:
+            self.request_logs[source] = []
+        
+        # Lọc các yêu cầu trong vòng 5 giây qua
+        self.request_logs[source] = [t for t in self.request_logs[source] if current_time - t < 5]
+        self.request_logs[source].append(current_time)
+
+        # Nếu truy cập quá 3 lần trong 5 giây -> BAN
+        if len(self.request_logs[source]) > 3:
+            return f"[BỊ BAN !!!] {source} đã bị tường lửa chặn do spam hệ thống!"
+        
+        return f"[CHO PHÉP TẠM THỜI] {source} đang truy cập bình thường."
+
+
+# --- CHƯƠNG TRÌNH CHẠY THỬ (DEMO) ---
+if __name__ == "__main__":
+    fw = MiniFirewall()
+    
+    # 1. Xem danh sách mặc định
+    fw.show_whitelist()
+    
+    # 2. Thêm một tên mới vào bảng để tránh ban
+    fw.add_to_whitelist("my-game-server.com")
+    fw.show_whitelist()
+    
+    # 3. Thử nghiệm kiểm tra truy cập
+    print("--- Thử nghiệm kiểm tra truy cập ---")
+    
+    # Trường hợp 1: Tên nằm trong Whitelist (gửi liên tục không sao)
+    for _ in range(5):
+        print(fw.check_traffic("my-game-server.com"))
+        
+    print("\n----------------------------------")
+    # Trường hợp 2: Tên LẠ không có trong bảng (gửi liên tục sẽ bị BAN)
+    for i in range(5):
+        print(f"Lần {i+1}: {fw.check_traffic('stranger-danger.xyz')}")
+ 
