@@ -12,7 +12,7 @@
         }
 
         body {
-            background-color: #000;
+            background-color: #05010a;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
@@ -31,7 +31,7 @@
             transform: translateX(-50%);
             width: 90%;
             max-width: 400px;
-            background: rgba(20, 20, 20, 0.95);
+            background: rgba(15, 5, 25, 0.95);
             border: 1px solid #ff00ea;
             border-radius: 12px;
             padding: 15px;
@@ -68,8 +68,8 @@
         }
 
         .input-group input {
-            background: #333;
-            border: 1px solid #55px;
+            background: #221230;
+            border: 1px solid #555;
             color: #fff;
             padding: 6px 10px;
             border-radius: 6px;
@@ -93,14 +93,13 @@
             font-size: 0.85rem;
         }
 
-        /* Nút nổi để hiện lại bảng cài đặt sau khi đã ẩn */
         .btn-show-panel {
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(20, 5, 35, 0.7);
             color: #fff;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.7rem;
@@ -109,24 +108,33 @@
             backdrop-filter: blur(5px);
         }
 
-
         /* ========================================================
-           GIAO DIỆN TRÌNH PHÁT NHẠC CHÍNH
+           GIAO DIỆN TRÌNH PHÁT NHẠC CHÍNH & HÌNH NỀN ĐỘNG
            ======================================================== */
         .player-container {
             position: relative;
             width: 100vw;
             height: 100vh;
             max-width: 450px;
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), 
-                        url('https://i.imgur.com/vP8S607.jpeg') no-repeat center center;
-            background-size: cover;
+            /* Tạo màu nền sâu có hiệu ứng phát sáng mờ phía sau */
+            background: radial-gradient(circle at center, #1a0230 0%, #05000d 100%);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 20px;
+        }
+
+        /* Canvas xử lý các hạt sáng động chạy ngầm hạt phát sáng 4K */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .top-logo {
@@ -147,21 +155,23 @@
             align-items: center;
             gap: 15px;
             z-index: 5;
-            background: rgba(20, 10, 25, 0.6);
+            background: rgba(15, 5, 25, 0.65);
             padding: 16px;
             border-radius: 16px;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         }
 
+        /* Ô ẢNH AVATAR ANIME PHÁT SÁNG MỚI */
         .album-art {
             width: 105px;
             height: 105px;
             border: 2.5px solid #ff00ea;
             border-radius: 12px;
             box-shadow: 0 0 15px rgba(255, 0, 234, 0.6);
-            background: url('https://i.imgur.com/vP8S607.jpeg') no-repeat center center;
+            /* Link ảnh đại diện Anime Neon độc quyền, độ phân giải cao */
+            background: url('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=500&auto=format&fit=crop') no-repeat center center;
             background-size: cover;
             flex-shrink: 0;
         }
@@ -272,7 +282,7 @@
             justify-content: space-between;
             padding: 0 5px;
             opacity: 0.6;
-            z-index: 1;
+            z-index: 5;
             pointer-events: none;
         }
 
@@ -305,36 +315,38 @@
         
         <div class="input-group">
             <label>1. Tên bài hát</label>
-            <input type="text" id="inputSong" value="VAMOS SE OLHAR" oninput="updateText()">
+            <input type="text" id="inputSong" value="NÁY LÊN ĐI EM" oninput="updateText()">
         </div>
         
         <div class="input-group">
             <label>2. Tên tác giả (Chữ hồng ở dưới)</label>
-            <input type="text" id="inputAuthor" value="MC TH VJ" oninput="updateText()">
+            <input type="text" id="inputAuthor" value="KT PRODUCER" oninput="updateText()">
         </div>
         
         <div class="input-group">
             <label>3. Tên của bạn (Chữ xanh lá dưới cùng)</label>
-            <input type="text" id="inputMyName" value="EM HUY" oninput="updateText()">
+            <input type="text" id="inputMyName" value="TRACK MUSIC" oninput="updateText()">
         </div>
 
         <div class="input-group">
-            <label>4. Tổng thời gian (Ví dụ: 0:48)</label>
-            <input type="text" id="inputTime" value="0:48" oninput="updateText()">
+            <label>4. Tổng thời gian (Ví dụ: 0:55)</label>
+            <input type="text" id="inputTime" value="0:55" oninput="updateText()">
         </div>
 
         <button class="btn-toggle-panel" onclick="togglePanel(true)">Ẩn bảng cài đặt</button>
     </div>
 
     <div class="player-container">
+        <canvas id="bg-canvas"></canvas>
+
         <div class="top-logo">EH</div>
 
         <div class="player-wrapper">
             <div class="album-art"></div>
 
             <div class="track-info">
-                <div class="song-title" id="ui-song-title">VAMOS SE OLHAR</div>
-                <div class="time-stamp"><span id="current-time">0:00</span> - <span id="total-time">0:48</span></div>
+                <div class="song-title" id="ui-song-title">NÁY LÊN ĐI EM</div>
+                <div class="time-stamp"><span id="current-time">0:00</span> - <span id="total-time">0:55</span></div>
                 
                 <div class="progress-bar-container">
                     <div class="progress-fill" id="progress-fill"></div>
@@ -347,8 +359,8 @@
                 </div>
 
                 <div class="custom-text-zone">
-                    <div class="sub-text" id="ui-author-name">MC TH VJ</div>
-                    <div class="main-tag" id="ui-my-name">EM HUY</div>
+                    <div class="sub-text" id="ui-author-name">KT PRODUCER</div>
+                    <div class="main-tag" id="ui-my-name">TRACK MUSIC</div>
                 </div>
             </div>
         </div>
@@ -430,6 +442,67 @@
             bar.style.animationDelay = `${Math.random() * 1.5}s`;
             visualizer.appendChild(bar);
         }
+
+        // ========================================================
+        // SCRIPT XỬ LÝ HÌNH NỀN ĐỘNG (PARTICLES BACKGROUND 4K)
+        // ========================================================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const particles = [];
+        const particleCount = 45; // Số lượng hạt sáng chuyển động ngầm
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 0.6 - 0.3;
+                this.speedY = Math.random() * -0.8 - 0.2; // Các hạt bay lên trên nhẹ nhàng
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                // Tạo hạt màu neon hồng/tím hòa hợp với giao diện
+                ctx.fillStyle = this.x % 2 === 0 ? '#ff00ea' : '#7a00ff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff00ea';
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
 
         // Chạy bộ đếm khi tải trang
         startTimer();
