@@ -3,236 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hacker Firewall Dashboard</title>
+    <title>Music Player Visualizer</title>
     <style>
-        /* Định dạng cơ bản cho toàn bộ trang */
-        body, html {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+        }
+
+        body {
+            background-color: #0b020f;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             overflow: hidden;
-            background-color: black;
-            font-family: 'Courier New', Courier, monospace;
         }
 
-        /* Lớp nền hiệu ứng Matrix chuyển động */
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        /* Lớp giao diện điều khiển nằm đè lên nền */
-        .interface-container {
-            position: absolute;
-            top: 0;
-            left: 0;
+        /* Khung chứa giao diện (tỷ lệ giống video short/story) */
+        .player-container {
+            position: relative;
             width: 100%;
-            height: 100%;
-            z-index: 2;
+            max-width: 450px;
+            height: 90vh;
+            background: linear-gradient(135deg, #1f012b 0%, #05000a 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(218, 0, 255, 0.15);
+            border: 1px solid rgba(218, 0, 255, 0.1);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.4); /* Làm mờ nền một chút để nổi bật bảng điều khiển */
+            padding: 20px;
         }
 
-        /* Khung điều khiển trung tâm */
-        .terminal-box {
-            background: rgba(10, 15, 10, 0.85);
-            border: 2px solid #00ff00;
-            box-shadow: 0 0 20px #00ff00;
-            padding: 25px;
-            width: 450px;
-            border-radius: 8px;
-            color: #00ff00;
-            text-shadow: 0 0 5px #00ff00;
-        }
-
-        .terminal-header {
-            text-align: center;
-            font-size: 20px;
+        /* Logo góc trên bên phải */
+        .top-logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #fff;
             font-weight: bold;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            animation: blink 1.5s infinite;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px #da00ff;
         }
 
-        /* Định dạng form nhập dữ liệu */
-        .input-group {
-            margin: 15px 0;
+        /* Khu vực hiển thị Player */
+        .player-wrapper {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Ảnh Album Neon */
+        .album-art {
+            width: 110px;
+            height: 110px;
+            border: 3px solid #da00ff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #da00ff;
+            background: #222; /* Thay bằng link ảnh thật nếu muốn */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .album-art::before {
+            content: '🎵';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+        }
+
+        /* Thông tin nhạc và điều khiển */
+        .track-info {
+            flex: 1;
             display: flex;
             flex-direction: column;
+            gap: 8px;
         }
 
-        .input-group label {
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-
-        .input-group input {
-            background: transparent;
-            border: 1px solid #00ff00;
-            padding: 10px;
-            color: #00ff00;
-            font-family: inherit;
-            outline: none;
-            font-size: 16px;
-        }
-
-        .input-group input:focus {
-            box-shadow: 0 0 8px #00ff00;
-        }
-
-        /* Nút bấm kiểu Cyberpunk */
-        .btn {
-            background: #00ff00;
-            color: black;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            font-size: 16px;
+        .song-title {
+            color: #fff;
+            font-size: 0.9rem;
             font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .time-stamp {
+            color: #b0a1b8;
+            font-size: 0.75rem;
+            font-family: monospace;
+        }
+
+        /* Thanh tiến trình & Sóng nhạc giả lập */
+        .progress-bar-container {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            position: relative;
+            margin-top: 2px;
+        }
+
+        .progress-fill {
+            width: 0%; /* Sẽ chạy bằng JS */
+            height: 100%;
+            background: #da00ff;
+            box-shadow: 0 0 8px #da00ff;
+        }
+
+        /* Nút điều khiển */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #fff;
             cursor: pointer;
-            font-family: inherit;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px #00ff00;
+            font-size: 1rem;
+            transition: 0.2s;
         }
 
-        .btn:hover {
-            background: black;
-            color: #00ff00;
-            border: 1px solid #00ff00;
+        .control-btn:hover {
+            color: #da00ff;
+            text-shadow: 0 0 5px #da00ff;
         }
 
-        /* Nhật ký hệ thống */
-        .log-box {
-            margin-top: 20px;
-            height: 120px;
-            border: 1px dashed #00ff00;
-            padding: 10px;
-            font-size: 12px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.5);
+        /* Khu vực chữ tùy biến theo yêu cầu */
+        .custom-text-zone {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
-        .log-entry {
-            margin-bottom: 5px;
+        /* CHỮ CÓ THỂ THAY ĐỔI Ở ĐÂY */
+        .sub-text {
+            color: #da00ff;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
         }
 
-        /* Hiệu ứng nhấp nháy chữ */
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .main-tag {
+            color: #00ff66;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-bottom: 2px solid #00ff66;
+            padding-bottom: 2px;
+        }
+
+        /* Hiệu ứng sóng nước mờ ảo ở đáy */
+        .wave-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: radial-gradient(circle at 50% 150%, #7a00ff 0%, transparent 70%);
+            opacity: 0.5;
+            z-index: 1;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="matrixCanvas"></canvas>
+    <div class="player-container">
+        <div class="top-logo">EH</div>
 
-    <div class="interface-container">
-        <div class="terminal-box">
-            <div class="terminal-header">> FIREWALL PROTECTOR _</div>
-            
-            <div class="input-group">
-                <label for="whitelistInput">Nhập IP hoặc Tên Miền để Tránh Ban:</label>
-                <input type="text" id="whitelistInput" placeholder="Ví dụ: my-game-server.com hoặc 1.1.1.1">
-            </div>
-            
-            <button class="btn" onclick="addToWhitelist()">THÊM VÀO WHITELIST</button>
+        <div class="player-wrapper">
+            <div class="album-art"></div>
 
-            <div class="log-box" id="logBox">
-                <div class="log-entry" style="color: #888;">[HỆ THỐNG]: Tường lửa đã kích hoạt thành công...</div>
+            <div class="track-info">
+                <div class="song-title" id="songTitle">VAMOS SE OLHAR</div>
+                <div class="time-stamp"><span id="currentTime">0:00</span> - 0:48</div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="controls">
+                    <button class="control-btn">⏮</button>
+                    <button class="control-btn" id="playBtn" style="font-size: 1.2rem;">⏸</button>
+                    <button class="control-btn">⏭</button>
+                </div>
+
+                <div class="custom-text-zone">
+                    <div class="sub-text" id="dynamicText">THAY CHỮ TẠI ĐÂY</div>
+                    <div class="main-tag">EM HUY</div>
+                </div>
             </div>
         </div>
+
+        <div class="wave-bg"></div>
     </div>
 
     <script>
-        // --- 1. CODE XỬ LÝ HIỆU ỨNG NỀN MATRIX CHUYỂN ĐỘNG ---
-        const canvas = document.getElementById('matrixCanvas');
-        const ctx = canvas.getContext('2d');
+        // --- CẤU HÌNH THAY ĐỔI CHỮ CỦA BẠN TẠI ĐÂY ---
+        const textTrenEmHuy = "VAMOS SE OLHAR"; // Thay chữ bạn muốn vào giữa hai dấu nháy này
+        // --------------------------------------------
 
-        // Khởi tạo kích thước canvas tràn màn hình
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        // Đổ chữ vào giao diện
+        document.getElementById('dynamicText').innerText = textTrenEmHuy;
 
-        // Ký tự hiển thị (Chữ cái, số và ký tự đặc biệt)
-        const katakana = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+";
-        const alphabet = katakana.split("");
+        // Logic chạy thời gian giả lập từ 0:00 đến 0:48
+        let currentSeconds = 0;
+        const totalSeconds = 48;
+        const currentTimeEl = document.getElementById('currentTime');
+        const progressFillEl = document.getElementById('progressFill');
+        const playBtn = document.getElementById('playBtn');
+        let isPlaying = true;
 
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
+        setInterval(() => {
+            if (!isPlaying) return;
 
-        // Khởi tạo mảng vị trí Y cho mỗi cột chữ
-        const rainDrops = [];
-        for (let x = 0; x < columns; x++) {
-            rainDrops[x] = 1;
-        }
-
-        // Hàm vẽ hiệu ứng chuyển động
-        function drawMatrix() {
-            // Tạo hiệu ứng mờ dần (màn đêm bao phủ) bằng cách phủ lớp đen trong suốt lên
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = '#0F0'; // Màu xanh lá đặc trưng
-            ctx.font = fontSize + 'px monospace';
-
-            for (let i = 0; i < rainDrops.length; i++) {
-                // Lấy ngẫu nhiên một ký tự
-                const text = alphabet[Math.floor(Math.random() * alphabet.length)];
-                
-                // Vẽ ký tự tại tọa độ (X, Y)
-                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
-
-                // Cho ký tự rơi xuống, nếu chạm đáy thì reset ngẫu nhiên về đỉnh
-                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    rainDrops[i] = 0;
-                }
-                rainDrops[i]++;
-            }
-        }
-
-        // Chạy hiệu ứng lặp đi lặp lại sau mỗi 30 mili giây
-        setInterval(drawMatrix, 30);
-
-
-        // --- 2. CODE XỬ LÝ SỰ KIỆN THÊM VÀO BẢNG TRÁNH BAN ---
-        const whitelist = new Set(["google.com", "127.0.0.1"]); // Danh sách mẫu ban đầu
-
-        function addToWhitelist() {
-            const inputEl = document.getElementById('whitelistInput');
-            const logBox = document.getElementById('logBox');
-            const value = inputEl.value.trim().toLowerCase();
-
-            if (!value) {
-                alert("Vui lòng điền tên hoặc IP hợp lệ!");
-                return;
+            currentSeconds++;
+            if (currentSeconds > totalSeconds) {
+                currentSeconds = 0; // Reset khi chạy hết 48s
             }
 
-            const currentTime = new Date().toLocaleTimeString();
-            let logMessage = "";
+            // Tính toán định dạng phút:giây
+            let mins = Math.floor(currentSeconds / 60);
+            let secs = currentSeconds % 60;
+            if (secs < 10) secs = '0' + secs;
 
-            if (whitelist.has(value)) {
-                logMessage = `<div class="log-entry" style="color: #ff9900;">[${currentTime}] [CẢNH BÁO]: '${value}' đã có sẵn trong bảng an toàn.</div>`;
-            } else {
-                whitelist.add(value);
-                logMessage = `<div class="log-entry" style="color: #00ff00;">[${currentTime}] [THÀNH CÔNG]: Đã bảo vệ '${value}' khỏi hệ thống BAN.</div>`;
-            }
+            currentTimeEl.innerText = `${mins}:${secs}`;
+            
+            // Cập nhật thanh bar chạy
+            const percent = (currentSeconds / totalSeconds) * 100;
+            progressFillEl.style.width = percent + '%';
+        }, 1000);
 
-            // Cập nhật nhật ký lên giao diện
-            logBox.innerHTML += logMessage;
-            logBox.scrollTop = logBox.scrollHeight; // Tự động cuộn xuống dòng mới nhất
-            inputEl.value = ""; // Xóa trống ô nhập
-        }
+        // Bấm nút Pause/Play cho có hiệu ứng
+        playBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            playBtn.innerText = isPlaying ? '⏸' : '▶';
+        });
     </script>
 </body>
 </html>
