@@ -12,7 +12,7 @@
         }
 
         body {
-            background-color: #0b020f;
+            background-color: #000;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
@@ -21,17 +21,17 @@
             overflow: hidden;
         }
 
-        /* Khung chứa giao diện (tỷ lệ giống video short/story) */
+        /* Khung chứa giao diện dọc toàn màn hình điện thoại */
         .player-container {
             position: relative;
-            width: 100%;
+            width: 100vw;
+            height: 100vh;
             max-width: 450px;
-            height: 90vh;
-            background: linear-gradient(135deg, #1f012b 0%, #05000a 100%);
-            border-radius: 20px;
+            /* ĐÂY LÀ ẢNH NỀN PHÍA SAU (Đã được làm mờ và tối đi) */
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), 
+                        url('https://i.imgur.com/vP8S607.jpeg') no-repeat center center;
+            background-size: cover;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(218, 0, 255, 0.15);
-            border: 1px solid rgba(218, 0, 255, 0.1);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -39,96 +39,95 @@
             padding: 20px;
         }
 
-        /* Logo góc trên bên phải */
+        /* Logo EH góc trên bên phải */
         .top-logo {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 40px;
+            right: 25px;
             color: #fff;
             font-weight: bold;
-            font-size: 1.2rem;
-            text-shadow: 0 0 10px #da00ff;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+            z-index: 5;
         }
 
-        /* Khu vực hiển thị Player */
+        /* Khung phát nhạc ở giữa */
         .player-wrapper {
-            width: 100%;
+            width: 92%;
             display: flex;
             align-items: center;
-            gap: 20px;
-            z-index: 2;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 15px;
+            z-index: 5;
+            background: rgba(20, 10, 25, 0.6);
+            padding: 16px;
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
-        /* Ảnh Album Neon */
+        /* Ô ẢNH ALBUM ANIME CHÍNH (Có viền hồng neon phát sáng) */
         .album-art {
-            width: 110px;
-            height: 110px;
-            border: 3px solid #da00ff;
-            border-radius: 10px;
-            box-shadow: 0 0 15px #da00ff;
-            background: #222; /* Thay bằng link ảnh thật nếu muốn */
-            position: relative;
-            overflow: hidden;
+            width: 105px;
+            height: 105px;
+            border: 2.5px solid #ff00ea;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(255, 0, 234, 0.6);
+            /* Thay link ảnh anime của bạn ở đây nếu muốn */
+            background: url('https://i.imgur.com/vP8S607.jpeg') no-repeat center center;
+            background-size: cover;
+            flex-shrink: 0;
         }
 
-        .album-art::before {
-            content: '🎵';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
-        }
-
-        /* Thông tin nhạc và điều khiển */
+        /* Thông tin chữ và nút bấm */
         .track-info {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            overflow: hidden;
         }
 
         .song-title {
             color: #fff;
-            font-size: 0.9rem;
-            font-weight: bold;
-            letter-spacing: 1px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
             text-transform: uppercase;
         }
 
         .time-stamp {
-            color: #b0a1b8;
+            color: rgba(255, 255, 255, 0.5);
             font-size: 0.75rem;
             font-family: monospace;
         }
 
-        /* Thanh tiến trình & Sóng nhạc giả lập */
+        /* Thanh chạy nhạc */
         .progress-bar-container {
             width: 100%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.2);
+            height: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
             position: relative;
-            margin-top: 2px;
+            margin: 2px 0;
         }
 
         .progress-fill {
-            width: 0%; /* Sẽ chạy bằng JS */
+            width: 48%; /* Bắt đầu ở khoảng giữa giống hình của bạn */
             height: 100%;
-            background: #da00ff;
-            box-shadow: 0 0 8px #da00ff;
+            background: #ff00ea;
+            box-shadow: 0 0 8px #ff00ea;
+            border-radius: 2px;
         }
 
-        /* Nút điều khiển */
+        /* Các nút điều khiển phát nhạc */
         .controls {
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-top: 5px;
         }
 
         .control-btn {
@@ -137,54 +136,96 @@
             color: #fff;
             cursor: pointer;
             font-size: 1rem;
-            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .control-btn:hover {
-            color: #da00ff;
-            text-shadow: 0 0 5px #da00ff;
+        .play-btn {
+            background: #ff9900;
+            color: #000;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
         }
 
-        /* Khu vực chữ tùy biến theo yêu cầu */
+        /* Khu vực chữ tùy biến của bạn */
         .custom-text-zone {
-            margin-top: 10px;
+            margin-top: 4px;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            gap: 2px;
         }
 
-        /* CHỮ CÓ THỂ THAY ĐỔI Ở ĐÂY */
         .sub-text {
-            color: #da00ff;
+            color: #ff00ea;
             font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 2px;
         }
 
         .main-tag {
             color: #00ff66;
             font-size: 0.85rem;
             font-weight: bold;
+            text-transform: uppercase;
+            width: max-content;
             border-bottom: 2px solid #00ff66;
-            padding-bottom: 2px;
+            padding-bottom: 1px;
         }
 
-        /* Hiệu ứng sóng nước mờ ảo ở đáy */
-        .wave-bg {
+        /* SÓNG NHẠC CHẠY ĐÁY MÀN HÌNH (Dạng sóng nhấp nhô) */
+        .wave-visualizer {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 150px;
-            background: radial-gradient(circle at 50% 150%, #7a00ff 0%, transparent 70%);
-            opacity: 0.5;
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 5px;
+            opacity: 0.6;
             z-index: 1;
+            pointer-events: none;
+        }
+
+        .wave-bar {
+            flex: 1;
+            background: linear-gradient(to top, #7a00ff, #ff00ea);
+            margin: 0 1px;
+            border-radius: 3px 3px 0 0;
+            height: 10px;
+            animation: bounce 1.2s ease-in-out infinite alternate;
+        }
+
+        /* Tạo độ nhấp nhô ngẫu nhiên cho các cột sóng nhạc */
+        .wave-bar:nth-child(2n) { animation-duration: 0.8s; }
+        .wave-bar:nth-child(3n) { animation-duration: 1.4s; }
+        .wave-bar:nth-child(4n) { animation-duration: 1.1s; }
+        .wave-bar:nth-child(5n) { animation-duration: 0.7s; }
+
+        @keyframes bounce {
+            0% { height: 5px; }
+            100% { height: 75px; }
         }
     </style>
 </head>
 <body>
+
+    <script>
+        // ========================================================
+        // KHU VỰC THAY ĐỔI THÔNG TIN - BẠN SỬA CHỮ Ở ĐÂY NHÉ:
+        // ========================================================
+        const TEN_BAI_HAT = "VAMOS SE OLHAR"; 
+        const CHU_TREN     = "VAMOS SE OLHAR"; // Chữ màu hồng phía trên EM HUY
+        const CHU_DUOI     = "EM HUY";          // Chữ màu xanh lá dưới cùng
+        // ========================================================
+    </script>
 
     <div class="player-container">
         <div class="top-logo">EH</div>
@@ -193,70 +234,45 @@
             <div class="album-art"></div>
 
             <div class="track-info">
-                <div class="song-title" id="songTitle">VAMOS SE OLHAR</div>
-                <div class="time-stamp"><span id="currentTime">0:00</span> - 0:48</div>
+                <div class="song-title" id="ui-song-title"></div>
+                <div class="time-stamp">0:23 - 0:48</div>
                 
                 <div class="progress-bar-container">
-                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-fill"></div>
                 </div>
 
                 <div class="controls">
                     <button class="control-btn">⏮</button>
-                    <button class="control-btn" id="playBtn" style="font-size: 1.2rem;">⏸</button>
+                    <button class="play-btn">II</button>
                     <button class="control-btn">⏭</button>
                 </div>
 
                 <div class="custom-text-zone">
-                    <div class="sub-text" id="dynamicText">THAY CHỮ TẠI ĐÂY</div>
-                    <div class="main-tag">EM HUY</div>
+                    <div class="sub-text" id="ui-sub-text"></div>
+                    <div class="main-tag" id="ui-main-tag"></div>
                 </div>
             </div>
         </div>
 
-        <div class="wave-bg"></div>
+        <div class="wave-visualizer" id="visualizer"></div>
     </div>
 
     <script>
-        // --- CẤU HÌNH THAY ĐỔI CHỮ CỦA BẠN TẠI ĐÂY ---
-        const textTrenEmHuy = "VAMOS SE OLHAR"; // Thay chữ bạn muốn vào giữa hai dấu nháy này
-        // --------------------------------------------
+        // Đưa dữ liệu đã cấu hình hiển thị lên giao diện web
+        document.getElementById('ui-song-title').innerText = TEN_BAI_HAT;
+        document.getElementById('ui-sub-text').innerText = CHU_TREN;
+        document.getElementById('ui-main-tag').innerText = CHU_DUOI;
 
-        // Đổ chữ vào giao diện
-        document.getElementById('dynamicText').innerText = textTrenEmHuy;
-
-        // Logic chạy thời gian giả lập từ 0:00 đến 0:48
-        let currentSeconds = 0;
-        const totalSeconds = 48;
-        const currentTimeEl = document.getElementById('currentTime');
-        const progressFillEl = document.getElementById('progressFill');
-        const playBtn = document.getElementById('playBtn');
-        let isPlaying = true;
-
-        setInterval(() => {
-            if (!isPlaying) return;
-
-            currentSeconds++;
-            if (currentSeconds > totalSeconds) {
-                currentSeconds = 0; // Reset khi chạy hết 48s
-            }
-
-            // Tính toán định dạng phút:giây
-            let mins = Math.floor(currentSeconds / 60);
-            let secs = currentSeconds % 60;
-            if (secs < 10) secs = '0' + secs;
-
-            currentTimeEl.innerText = `${mins}:${secs}`;
-            
-            // Cập nhật thanh bar chạy
-            const percent = (currentSeconds / totalSeconds) * 100;
-            progressFillEl.style.width = percent + '%';
-        }, 1000);
-
-        // Bấm nút Pause/Play cho có hiệu ứng
-        playBtn.addEventListener('click', () => {
-            isPlaying = !isPlaying;
-            playBtn.innerText = isPlaying ? '⏸' : '▶';
-        });
+        // Tự động tạo các cột sóng nhạc nhấp nhô dưới đáy
+        const visualizer = document.getElementById('visualizer');
+        const totalBars = window.innerWidth / 7; // Tính toán số lượng cột dựa trên độ rộng màn hình
+        for (let i = 0; i < totalBars; i++) {
+            const bar = document.createElement('div');
+            bar.classList.add('wave-bar');
+            // Gán ngẫu nhiên độ cao ban đầu để sóng nhìn tự nhiên hơn
+            bar.style.animationDelay = `${Math.random() * 1.5}s`;
+            visualizer.appendChild(bar);
+        }
     </script>
 </body>
 </html>
