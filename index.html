@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Player Visualizer</title>
+    <title>Music Player Visualizer - Live Editor</title>
     <style>
         * {
             box-sizing: border-box;
@@ -21,13 +21,103 @@
             overflow: hidden;
         }
 
-        /* Khung chứa giao diện dọc toàn màn hình điện thoại */
+        /* ========================================================
+           BẢNG ĐIỀU KHIỂN SỬA CHỮ TRỰC TIẾP TRÊN WEB
+           ======================================================== */
+        .editor-panel {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #ff00ea;
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .editor-panel.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(-50%) translateY(-20px);
+        }
+
+        .editor-panel h3 {
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            color: #ccc;
+            font-size: 0.75rem;
+        }
+
+        .input-group input {
+            background: #333;
+            border: 1px solid #55px;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #ff00ea;
+        }
+
+        .btn-toggle-panel {
+            width: 100%;
+            background: linear-gradient(to right, #7a00ff, #ff00ea);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Nút nổi để hiện lại bảng cài đặt sau khi đã ẩn */
+        .btn-show-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            z-index: 99;
+            backdrop-filter: blur(5px);
+        }
+
+
+        /* ========================================================
+           GIAO DIỆN TRÌNH PHÁT NHẠC CHÍNH
+           ======================================================== */
         .player-container {
             position: relative;
             width: 100vw;
             height: 100vh;
             max-width: 450px;
-            /* ĐÂY LÀ ẢNH NỀN PHÍA SAU (Đã được làm mờ và tối đi) */
             background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), 
                         url('https://i.imgur.com/vP8S607.jpeg') no-repeat center center;
             background-size: cover;
@@ -39,7 +129,6 @@
             padding: 20px;
         }
 
-        /* Logo EH góc trên bên phải */
         .top-logo {
             position: absolute;
             top: 40px;
@@ -52,7 +141,6 @@
             z-index: 5;
         }
 
-        /* Khung phát nhạc ở giữa */
         .player-wrapper {
             width: 92%;
             display: flex;
@@ -67,20 +155,17 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
-        /* Ô ẢNH ALBUM ANIME CHÍNH (Có viền hồng neon phát sáng) */
         .album-art {
             width: 105px;
             height: 105px;
             border: 2.5px solid #ff00ea;
             border-radius: 12px;
             box-shadow: 0 0 15px rgba(255, 0, 234, 0.6);
-            /* Thay link ảnh anime của bạn ở đây nếu muốn */
             background: url('https://i.imgur.com/vP8S607.jpeg') no-repeat center center;
             background-size: cover;
             flex-shrink: 0;
         }
 
-        /* Thông tin chữ và nút bấm */
         .track-info {
             flex: 1;
             display: flex;
@@ -105,7 +190,6 @@
             font-family: monospace;
         }
 
-        /* Thanh chạy nhạc */
         .progress-bar-container {
             width: 100%;
             height: 3px;
@@ -116,14 +200,13 @@
         }
 
         .progress-fill {
-            width: 48%; /* Bắt đầu ở khoảng giữa giống hình của bạn */
+            width: 0%;
             height: 100%;
             background: #ff00ea;
             box-shadow: 0 0 8px #ff00ea;
             border-radius: 2px;
         }
 
-        /* Các nút điều khiển phát nhạc */
         .controls {
             display: flex;
             align-items: center;
@@ -153,7 +236,6 @@
             cursor: pointer;
         }
 
-        /* Khu vực chữ tùy biến của bạn */
         .custom-text-zone {
             margin-top: 4px;
             display: flex;
@@ -178,7 +260,7 @@
             padding-bottom: 1px;
         }
 
-        /* SÓNG NHẠC CHẠY ĐÁY MÀN HÌNH (Dạng sóng nhấp nhô) */
+        /* Sóng nhạc nhấp nhô đáy màn hình */
         .wave-visualizer {
             position: absolute;
             bottom: 0;
@@ -203,7 +285,6 @@
             animation: bounce 1.2s ease-in-out infinite alternate;
         }
 
-        /* Tạo độ nhấp nhô ngẫu nhiên cho các cột sóng nhạc */
         .wave-bar:nth-child(2n) { animation-duration: 0.8s; }
         .wave-bar:nth-child(3n) { animation-duration: 1.4s; }
         .wave-bar:nth-child(4n) { animation-duration: 1.1s; }
@@ -217,15 +298,33 @@
 </head>
 <body>
 
-    <script>
-        // ========================================================
-        // KHU VỰC THAY ĐỔI THÔNG TIN - BẠN SỬA CHỮ Ở ĐÂY NHÉ:
-        // ========================================================
-        const TEN_BAI_HAT = "VAMOS SE OLHAR"; 
-        const CHU_TREN     = "VAMOS SE OLHAR"; // Chữ màu hồng phía trên EM HUY
-        const CHU_DUOI     = "EM HUY";          // Chữ màu xanh lá dưới cùng
-        // ========================================================
-    </script>
+    <button class="btn-show-panel" onclick="togglePanel(false)">⚙ Cài đặt chữ</button>
+
+    <div class="editor-panel" id="editorPanel">
+        <h3>BẢNG ĐỔI CHỮ NHANH</h3>
+        
+        <div class="input-group">
+            <label>1. Tên bài hát</label>
+            <input type="text" id="inputSong" value="VAMOS SE OLHAR" oninput="updateText()">
+        </div>
+        
+        <div class="input-group">
+            <label>2. Tên tác giả (Chữ hồng ở dưới)</label>
+            <input type="text" id="inputAuthor" value="MC TH VJ" oninput="updateText()">
+        </div>
+        
+        <div class="input-group">
+            <label>3. Tên của bạn (Chữ xanh lá dưới cùng)</label>
+            <input type="text" id="inputMyName" value="EM HUY" oninput="updateText()">
+        </div>
+
+        <div class="input-group">
+            <label>4. Tổng thời gian (Ví dụ: 0:48)</label>
+            <input type="text" id="inputTime" value="0:48" oninput="updateText()">
+        </div>
+
+        <button class="btn-toggle-panel" onclick="togglePanel(true)">Ẩn bảng cài đặt</button>
+    </div>
 
     <div class="player-container">
         <div class="top-logo">EH</div>
@@ -234,22 +333,22 @@
             <div class="album-art"></div>
 
             <div class="track-info">
-                <div class="song-title" id="ui-song-title"></div>
-                <div class="time-stamp">0:23 - 0:48</div>
+                <div class="song-title" id="ui-song-title">VAMOS SE OLHAR</div>
+                <div class="time-stamp"><span id="current-time">0:00</span> - <span id="total-time">0:48</span></div>
                 
                 <div class="progress-bar-container">
-                    <div class="progress-fill"></div>
+                    <div class="progress-fill" id="progress-fill"></div>
                 </div>
 
                 <div class="controls">
                     <button class="control-btn">⏮</button>
-                    <button class="play-btn">II</button>
+                    <button class="play-btn" id="play-btn">II</button>
                     <button class="control-btn">⏭</button>
                 </div>
 
                 <div class="custom-text-zone">
-                    <div class="sub-text" id="ui-sub-text"></div>
-                    <div class="main-tag" id="ui-main-tag"></div>
+                    <div class="sub-text" id="ui-author-name">MC TH VJ</div>
+                    <div class="main-tag" id="ui-my-name">EM HUY</div>
                 </div>
             </div>
         </div>
@@ -258,21 +357,82 @@
     </div>
 
     <script>
-        // Đưa dữ liệu đã cấu hình hiển thị lên giao diện web
-        document.getElementById('ui-song-title').innerText = TEN_BAI_HAT;
-        document.getElementById('ui-sub-text').innerText = CHU_TREN;
-        document.getElementById('ui-main-tag').innerText = CHU_DUOI;
+        const panel = document.getElementById('editorPanel');
 
-        // Tự động tạo các cột sóng nhạc nhấp nhô dưới đáy
+        // Hàm ẩn/hiện bảng cài đặt chữ
+        function togglePanel(hide) {
+            if (hide) {
+                panel.classList.add('hidden');
+            } else {
+                panel.classList.remove('hidden');
+            }
+        }
+
+        // Hàm cập nhật chữ trực tiếp khi gõ vào ô nhập
+        function updateText() {
+            document.getElementById('ui-song-title').innerText = document.getElementById('inputSong').value;
+            document.getElementById('ui-author-name').innerText = document.getElementById('inputAuthor').value;
+            document.getElementById('ui-my-name').innerText = document.getElementById('inputMyName').value;
+            document.getElementById('total-time').innerText = document.getElementById('inputTime').value;
+            resetTimer();
+        }
+
+        // Logic bộ đếm thời gian phát nhạc
+        let currentSeconds = 0;
+        let timerInterval;
+        const currentTimeEl = document.getElementById('current-time');
+        const progressFillEl = document.getElementById('progress-fill');
+        const playBtn = document.getElementById('play-btn');
+        let isPlaying = true;
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isPlaying) return;
+
+                const timeStr = document.getElementById('inputTime').value;
+                const timeParts = timeStr.split(':');
+                const maxSeconds = (parseInt(timeParts[0]) || 0) * 60 + (parseInt(timeParts[1]) || 0);
+
+                currentSeconds++;
+                if (currentSeconds > maxSeconds) {
+                    currentSeconds = 0;
+                }
+
+                let mins = Math.floor(currentSeconds / 60);
+                let secs = currentSeconds % 60;
+                if (secs < 10) secs = '0' + secs;
+
+                currentTimeEl.innerText = `${mins}:${secs}`;
+                
+                const percent = maxSeconds > 0 ? (currentSeconds / maxSeconds) * 100 : 0;
+                progressFillEl.style.width = percent + '%';
+            }, 1000);
+        }
+
+        function resetTimer() {
+            currentSeconds = 0;
+            currentTimeEl.innerText = "0:00";
+            progressFillEl.style.width = "0%";
+        }
+
+        playBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            playBtn.innerText = isPlaying ? 'II' : '▶';
+        });
+
+        // Tạo hiệu ứng sóng nhạc tự động nhấp nhô
         const visualizer = document.getElementById('visualizer');
-        const totalBars = window.innerWidth / 7; // Tính toán số lượng cột dựa trên độ rộng màn hình
+        const totalBars = window.innerWidth / 7;
         for (let i = 0; i < totalBars; i++) {
             const bar = document.createElement('div');
             bar.classList.add('wave-bar');
-            // Gán ngẫu nhiên độ cao ban đầu để sóng nhìn tự nhiên hơn
             bar.style.animationDelay = `${Math.random() * 1.5}s`;
             visualizer.appendChild(bar);
         }
+
+        // Chạy bộ đếm khi tải trang
+        startTimer();
     </script>
 </body>
 </html>
